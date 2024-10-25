@@ -1,36 +1,19 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = {
   entry: './src/index.js',
-  target: 'web',
-  experiments: {
-    asyncWebAssembly: true,
-  },
-  cache: false,
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
+    library: {
+      name: 'untarjs',
+      type: 'umd',
+    },
     clean: true,
   },
-  devServer: {
-    static: path.join(__dirname, 'src'),
-    compress: true,
-    port: 9000,
-    hot: false,
-    liveReload: true,
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './src/index.html',
-    }),
-    new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
-      process: 'process/browser',
-    }),
-  ],
   resolve: {
+    extensions: ['.js'],
     fallback: {
       "path": require.resolve("path-browserify"),
       "crypto": require.resolve("crypto-browserify"),
@@ -43,7 +26,7 @@ module.exports = {
       "os": require.resolve("os-browserify/browser"),
       "url": require.resolve("url/"),
       "fs": require.resolve("browserify-fs"),
-      "vm": require.resolve("vm-browserify") 
+      "vm": require.resolve("vm-browserify")
     }
   },
   module: {
@@ -53,25 +36,22 @@ module.exports = {
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
-        },
-      },
-      {
-        test: /lib\.js$/,
-        loader: 'exports-loader',
-        options: {
-          type: 'module',
-          exports: 'unpackaging',
+          options: {
+            presets: ['@babel/preset-env'], // Presets to use for Babel
+          },
         },
       },
       {
         test: /\.wasm$/,
         type: 'asset/resource',
       },
-      {
-        test: /fib\.wasm$/,
-        type: `javascript/auto`,
-        loader: `file-loader`,
-      },
     ],
   },
+  mode: 'development',
+  plugins: [
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser',
+    }),
+  ],
 };
